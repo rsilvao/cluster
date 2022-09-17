@@ -5,8 +5,8 @@ provider "aws" {
 }
 
 
-resource "aws_security_group" "WebSG" { #Vamos a crear un grupo de seguridad
-  name = "sg_reglas_firewall"
+resource "aws_security_group" "DockerWebSG" { #Vamos a crear un grupo de seguridad
+  name = "sg_reglas_firewall_Docker-Swarm"
   ingress {                     #Reglas de firewall de entrada
     cidr_blocks = ["0.0.0.0/0"] #Se aplicará a todas las direcciones
     description = "SG HTTP"     #Descripción
@@ -36,13 +36,17 @@ resource "aws_security_group" "WebSG" { #Vamos a crear un grupo de seguridad
     protocol    = "-1"                      #Protocolo
   }
 }
-resource "aws_instance" "Reverse-Proxy" {
-  instance_type          = "t2.micro"
-  ami                    = "ami-08d4ac5b634553e16"
+resource "aws_instance" "Docker-Swarm" {
+  instance_type = "t2.micro"
+  count         = 3
+  ami           = "ami-08d4ac5b634553e16"
+  tags = {
+    "name" = "Node-${count.index}"
+  }
   key_name               = "Rsoclave"
   user_data              = filebase64("${path.module}/scripts/docker2.sh")
-  vpc_security_group_ids = [aws_security_group.WebSG.id]
+  vpc_security_group_ids = [aws_security_group.DockerWebSG.id]
 }
 output "public_ip" {
-  value = join(",", aws_instance.Reverse-Proxy.*.public_ip)
+  value = join(",", aws_instance.Docker-Swarm.*.public_ip)
 }
