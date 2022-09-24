@@ -21,6 +21,23 @@ resource "aws_security_group" "DockerWebSG" { #Vamos a crear un grupo de segurid
     to_port     = 443           #Al puerto
     protocol    = "tcp"         #Protocolo
   }
+
+  ingress {                     #Reglas de firewall de entrada
+    cidr_blocks = ["0.0.0.0/0"] #Se aplicará a todas las direcciones
+    description = "SG HTTP Visualizer"     #Descripción
+    from_port   = 8080           #Del puerto
+    to_port     = 8080           #Al puerto
+    protocol    = "tcp"         #Protocolo
+  }
+
+  ingress {
+    cidr_blocks = ["172.31.21.168/32","172.31.24.139/32","172.31.18.182/32","172.31.85.150/32"] #Se aplicará a todas las direcciones"
+    description = "SG Docker-Swarm "    #Descripción
+    from_port   = 2377           #Del puerto
+    to_port     = 2377           #Al puerto
+    protocol    = "tcp"         #Protocolo
+  }
+
   ingress {
     cidr_blocks = ["0.0.0.0/0"] #Se aplicará a todas las direcciones
     description = "SG SSH"      #Descripción
@@ -38,7 +55,7 @@ resource "aws_security_group" "DockerWebSG" { #Vamos a crear un grupo de segurid
 }
 resource "aws_instance" "Docker-Swarm" {
   instance_type = "t2.micro"
-  count         = 3
+  count         = 4
   ami           = "ami-08d4ac5b634553e16"
   tags = {
     "name" = "Node-${count.index}"
